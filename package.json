@@ -1,7 +1,7 @@
 {
   "name": "contracts-collection",
   "version": "0.0.1",
-  "description": "A collection of contracts smart contracts created using the Harmonic Labs' PLU-TS library",
+  "description": "A collection of Cardano smart contracts created using the Harmonic Labs' PLU-TS library",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

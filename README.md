@@ -24,9 +24,9 @@ You will at the least need an Ogmios/Cardano-node instance.
    ```sh
    git clone [your_repo_url]
    cd [your_repo_folder]
-2. `npm install`
-3. I would also recommend installing `ts-node` globally. 
-4. run any of the scripts: `ts-node --env-file=.env src/vesting_example/__scripts__/createVestingUTXO.ts`
+2. ```npm install
+3. ```I would also recommend installing `ts-node` globally. 
+4. ```run any of the scripts: `ts-node --env-file=.env src/vesting_example/__scripts__/createVestingUTXO.ts`
 
 # Run in demeter.run
 
