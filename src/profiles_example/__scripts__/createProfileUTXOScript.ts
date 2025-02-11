@@ -1,14 +1,14 @@
 import {  profileContractScript } from "../contracts/profile_contract";
-import MandalaProfileRedeemer from "../redeemers/ProfileRedeemer";
+import ProfileRedeemer from "../redeemers/ProfileRedeemer/ProfileRedeemer";
 import { txBuilder_buildooor } from "../txBuilders/txBuilder";
-import { seedPhraseToEntropy, genRootPrivateKey, genAddressPrv, genBaseAddressFromEntropy } from "../lib/buildooorCrypto";
+import { seedPhraseToEntropy, genRootPrivateKey, genAddressPrv, genBaseAddressFromEntropy } from "../../lib/buildooorCrypto";
 import { Address, NetworkT, Credential, dataFromCbor, DataConstr, DataB, pByteString } from "@harmoniclabs/plu-ts";
-import { getAddressUtxoInfoOgmios, getProtocolParametersOgmios } from "../backends/ogmios/ogmios";
+import { getAddressUtxoInfoOgmios, getProtocolParametersOgmios } from "../../backends/ogmios/ogmios";
 
 const backend = ["ogmios", "ws://192.168.1.247:1337", "", ""];
 const seedPhrase = "";
 const network: NetworkT = "testnet";
-const script = profileContractScript();
+const script = profileContractScript;
 
 const compileContract = async () => {
   console.log("validator compiled succesfully! 🎉\n");
@@ -102,7 +102,7 @@ const runCreateVestingUTxO = async () => {
     [],
     [],
     [],
-    [ MandalaProfileRedeemer ], 
+    [ ProfileRedeemer ], 
     vestingAddressPKH
   );
 };

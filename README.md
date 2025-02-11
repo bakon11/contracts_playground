@@ -24,16 +24,15 @@ You will at the least need an Ogmios/Cardano-node instance.
    ```sh
    git clone [your_repo_url]
    cd [your_repo_folder]
-2. **install deps:**
+2. **Install Deps**
    ```sh
-   npm install
-   
-3. I would also recommend installing `ts-node` globally.
-   ```sh
-   npm install -g ts-node
-4. Running the scripts
-   ```sh
-   ts-node --env-file=.env src/vesting_example/__scripts__/createVestingUTXO.ts
+   `npm install`
+3. **I would also recommend installing: `ts-node` globally. 
+   ```sh 
+      npm install -g ts-node
+4. **run any of the scripts:**
+   ```sh 
+   `node --env-file=.env -r ts-node/register /media/bakon/data/Dev/bakons/contracts/src/vesting_example/__scripts__/createVestingUTXO.ts`
 
 # Run in demeter.run
 

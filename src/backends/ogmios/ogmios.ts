@@ -65,11 +65,8 @@ export const wsp = (method: string, params: object): W3CWebSocket => {
   }
 
   // If no connection exists or it's not open, proceed with creating one
-  const backend =  JSON.stringify(["", "", "", ""]);
-  const backendConfig = JSON.parse(backend);
-  console.log("backend", backendConfig[0]);
 
-  ws = new W3CWebSocket(backendConfig[1]);
+  ws = new W3CWebSocket(process.env.BACKEND_HOST as string);
 
   ws.onopen = () => {
     console.log("Ogmios Connection opened");

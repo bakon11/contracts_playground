@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as buildooor from '@harmoniclabs/buildooor'
 import * as pluts from '@harmoniclabs/plu-ts'
-import { splitAsset } from './utils'
-import { OgmiosUtxoToInputsBuildooor, getTipOgmios } from './ogmios'
+import { splitAsset } from '../../lib/utils'
+import { OgmiosUtxoToInputsBuildooor, getTipOgmios } from '../../backends/ogmios/ogmios'
 import { fromHex } from '@harmoniclabs/uint8array-utils'
 import { defaultMainnetGenesisInfos, defaultPreprodGenesisInfos, defaultProtocolParameters, IGetGenesisInfos, IGetProtocolParameters, TxBuilder } from "@harmoniclabs/plu-ts";
 

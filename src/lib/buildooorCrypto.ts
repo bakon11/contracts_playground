@@ -26,15 +26,14 @@ export const validateSeedPhrase = (seed: string) => {
   }
 }
 
-export const seedPhraseToEntropy = (seed_phrase: string) => {
+export const seedPhraseToEntropy = async (seed_phrase: string) => {
   return mnemonicToEntropy(seed_phrase)
 }
 
-export const genRootPrivateKey = (entropy: any) => {
+export const genRootPrivateKey = async (entropy: any) => {
   try {
-    const rootKey = buildooor.XPrv.fromEntropy(entropy, '')
+    return buildooor.XPrv.fromEntropy(entropy, '')
     // console.log("rootKey", rootKey);
-    return rootKey as buildooor.XPrv
   } catch (error) {
     console.log('root key error: ', error)
     return 'root key error'
@@ -50,7 +49,7 @@ export const genAccountPrivatekey = (rootKey: buildooor.XPrv, index: number) => 
   return accountKey
 }
 
-export const genAddressPrv = (xprv_root: buildooor.XPrv, accIndex: number, addressType: number, addressIndex: number) => {
+export const genAddressPrv = async (xprv_root: buildooor.XPrv, accIndex: number, addressType: number, addressIndex: number) => {
   return xprv_root
   .derive(buildooor.harden(1852))
   .derive(buildooor.harden(1815))
@@ -59,21 +58,20 @@ export const genAddressPrv = (xprv_root: buildooor.XPrv, accIndex: number, addre
   .derive(addressIndex)
 }
 
-export const genAddressPrivateKey = (accountKey: any, index: number) => {
-  const spendingKey = accountKey
+export const genAddressPrivateKey = async (accountKey: any, index: number) => {
+  return accountKey
     .derive(0) // 0 external || 1 change || 2 stake key
     .derive(index) // index
-  return spendingKey
+  
 }
 
-export const genAddressStakeKey = (accountKey: any, index: number) => {
-  const spendingKey = accountKey
+export const genAddressStakeKey = async (accountKey: any, index: number) => {
+  return accountKey
     .derive(2) // 0 external || 1 change || 2 stake key
     .derive(index) // index
-  return spendingKey
 }
 
-export const genBaseAddressFromEntropy = (
+export const genBaseAddressFromEntropy = async (
   entropy: string,
   network: buildooor.NetworkT,
   accountIndex: number,
@@ -98,7 +96,7 @@ export const genBaseAddressFromEntropy = (
   return baseAddress
 }
 
-export const genStakeAddressFromEntropy = (
+export const genStakeAddressFromEntropy = async (
   entropy: string,
   network: buildooor.NetworkT,
   accountIndex: number,

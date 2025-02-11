@@ -1,5 +1,5 @@
 import { Address, compile, Credential, pfn, Script, ScriptType, Builtin, Delay, UPLCConst, compileUPLC, UPLCProgram, ByteString, parseUPLC, PScriptContext, unit, plet, pmatch, perror, PMaybe, punsafeConvertType, pBool, passert, ptraceIfFalse, pStr, pdelay, data, Force, Application} from "@harmoniclabs/plu-ts";
-import VestingDatumRedeemer from "../redeemers/VestingDatumRedeemer";
+import VestingDatumRedeemer from "../redeemers/VestingDatumRedeemer/VestingDatumRedeemer";
 
 export const contract = pfn([
     PScriptContext.type

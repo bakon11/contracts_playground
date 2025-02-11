@@ -1,8 +1,8 @@
 import { PPubKeyHash, int, str, pstruct } from "@harmoniclabs/plu-ts";
 
 // modify the Datum as you prefer
-const MandalaProfileRedeemer = pstruct({
-    VestingDatum: {
+const ProfileRedeemer = pstruct({
+    ProfileRedeemer: {
         owner: PPubKeyHash.type, // owner of the profile by pub key hash
         pfpImage: str, // string location of pfp probably IPFS in this case
         clan: str, // string of the clan name
@@ -30,4 +30,4 @@ const MandalaProfileRedeemer = pstruct({
     }
 });
 
-export default MandalaProfileRedeemer;
+export default ProfileRedeemer;

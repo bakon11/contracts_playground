@@ -23,6 +23,7 @@ export const spendVestingUtxoTx: any = async (
   datumOutputs: any[],
   vestingAddressPKH: any
 ) => {
+  console.log("accountAddressKeyPrv", accountAddressKeyPrv)
   /*
   ##########################################################################################################
   Constructing TxBuilder instance
@@ -157,24 +158,25 @@ let refScriptInputs: any = []
     )
     // console.log("VKeyWitness", VKeyWitness);
     builtTx.witnesses.addVKeyWitness(VKeyWitness)
+
     const txCBOR = builtTx.toCbor()
     const txHash = builtTx.hash
     const txFee = builtTx.body.fee
     const linearFee = txBuilder.calcLinearFee( txCBOR )
     const txJson = JSON.stringify(builtTx.toJson(), undefined, 2);
-    console.log("\n" + "#".repeat(100))
-    console.log("#".repeat(100))
-    console.log("buildTx", builtTx)
-    console.log("\n" + "#".repeat(100))
-    console.log("#".repeat(100))
+    // console.log("\n" + "#".repeat(100))
+    // console.log("#".repeat(100))
+    // console.log("buildTx", builtTx)
+    // console.log("\n" + "#".repeat(100))
+    // console.log("#".repeat(100))
     console.log('txCBOR in app', txCBOR.toString())
     // console.log('txHash', txHash.toString())
     // console.log('minFee app', txFee)
     // console.log('linearFee app', linearFee)
     // console.log("Tx Raw: ", builtTx.body)
-    console.log("\n" + "#".repeat(100))
-    console.log("#".repeat(100))
-    console.log('txJson builder', txJson)
+    // console.log("\n" + "#".repeat(100))
+    // console.log("#".repeat(100))
+    // console.log('txJson builder', txJson)
     return builtTx
   } catch (error) {
     console.log('txBuilder.buildSync', error)

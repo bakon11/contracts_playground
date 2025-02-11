@@ -5,7 +5,7 @@ import { splitAsset } from '../../lib/utils'
 import { OgmiosUtxoToInputsBuildooor, getTipOgmios } from '../../backends/ogmios/ogmios'
 import { fromHex } from '@harmoniclabs/uint8array-utils'
 import { defaultMainnetGenesisInfos, defaultPreprodGenesisInfos, defaultProtocolParameters, IGetGenesisInfos, IGetProtocolParameters, TxBuilder } from "@harmoniclabs/plu-ts";
-
+// "lovelace":205409}
 
 //** This TX builder will only fit very specific use cases for now. */
 export const createVestingUtxoTx: any = async (
@@ -15,17 +15,17 @@ export const createVestingUtxoTx: any = async (
   changeAddress: any,
   accountAddressKeyPrv: any,
   metadata: any,
-  script: any,
   scriptAddr: any,
   datumOutputs: any[],
   vestingAddressPKH: any
 ) => {
+  console.log("accountAddressKeyPrv", accountAddressKeyPrv)
   /*
   ##########################################################################################################
   Constructing TxBuilder instance
   #############################d############################################################################
   */
-  const txBuilder = new buildooor.TxBuilder(defaultProtocolParameters, defaultPreprodGenesisInfos) 
+  const txBuilder = new buildooor.TxBuilder(protocolParameters, defaultPreprodGenesisInfos) 
   // console.log('defaultProtocolParameters', protocolParameters)
   // console.log('defaultPreprodGenesisInfos', defaultPreprodGenesisInfos)
   /*
@@ -60,7 +60,7 @@ export const createVestingUtxoTx: any = async (
  let datumOutputsParsed: any = [];
   if (datumOutputs.length > 0) {
     datumOutputsParsed = await createDatumOutsputs(scriptAddr, datumOutputs, vestingAddressPKH)
-    console.log('datumOutputsParsed', datumOutputsParsed)
+    // console.log('datumOutputsParsed', datumOutputsParsed)
   }
 
   /*
@@ -133,24 +133,25 @@ export const createVestingUtxoTx: any = async (
     )
     // console.log("VKeyWitness", VKeyWitness);
     builtTx.witnesses.addVKeyWitness(VKeyWitness)
+
     const txCBOR = builtTx.toCbor()
     const txHash = builtTx.hash
     const txFee = builtTx.body.fee
     const linearFee = txBuilder.calcLinearFee( txCBOR )
     const txJson = JSON.stringify(builtTx.toJson(), undefined, 2);
-    console.log("\n" + "#".repeat(100))
-    console.log("#".repeat(100))
-    console.log("buildTx", builtTx)
-    console.log("\n" + "#".repeat(100))
-    console.log("#".repeat(100))
+    // console.log("\n" + "#".repeat(100))
+    // console.log("#".repeat(100))
+    // console.log("buildTx", builtTx)
+    // console.log("\n" + "#".repeat(100))
+    // console.log("#".repeat(100))
     console.log('txCBOR in app', txCBOR.toString())
     // console.log('txHash', txHash.toString())
     // console.log('minFee app', txFee)
     // console.log('linearFee app', linearFee)
     // console.log("Tx Raw: ", builtTx.body)
-    console.log("\n" + "#".repeat(100))
-    console.log("#".repeat(100))
-    console.log('txJson builder', txJson)
+    // console.log("\n" + "#".repeat(100))
+    // console.log("#".repeat(100))
+    // console.log('txJson builder', txJson)
     return builtTx
   } catch (error) {
     console.log('txBuilder.buildSync', error)
@@ -176,13 +177,8 @@ const mintedTokensOutputs = async (mintedValue: any, changeAddress: string, scri
   // console.log('mintedValue', mintedValue.toJson())
   Promise.all(
     Object.entries(mintedValue.toJson()).map(([policyId, assets]: any) => {
-      // policyId !== '' && console.log('policyId', fromHex(policyId))
-      // policyId !== '' && console.log('assets', assets)
       policyId !== '' &&
         Object.entries(assets).map(([assetName, quantity]: any) => {
-          // policyId !== '' && console.log('policyId', scriptAddr.paymentCreds.hash)
-          // assetName !== '' && console.log('assetName', assetName)
-          // assetName !== '' && console.log('quantity', quantity)
           assetName !== '' &&
             mintOutputs.push({
               address: changeAddress,
@@ -242,8 +238,6 @@ const createOutputValues = async (output: any, txBuilder: any) => {
   let outputAssets: any = []
   Promise.all(
     Object.entries(output.value).map(([key, value]: any) => {
-      // console.log("key", key);
-      // console.log("value", value);
       key === 'coins' && outputAssets.push(buildooor.Value.lovelaces(value))
       key === 'assets' &&
         Object.entries(value).length > 0 &&
@@ -258,15 +252,12 @@ const createOutputValues = async (output: any, txBuilder: any) => {
     })
   )
   let outputParsed = outputAssets.reduce(buildooor.Value.add)
-  // console.log('outputParsed', outputParsed.toCbor().toString())
   const minUtxo = txBuilder.getMinimumOutputLovelaces(outputParsed.toCbor().toString())
   console.log('minUtxo', Number(minUtxo))
 
   outputAssets = []
   Promise.all(
     Object.entries(output.value).map(([key, value]: any) => {
-      // console.log("key", key);
-      // console.log("value", value);
       key === 'coins' && outputAssets.push(buildooor.Value.lovelaces(value + Number(minUtxo)))
       key === 'assets' &&
         Object.entries(value).length > 0 &&
@@ -281,16 +272,13 @@ const createOutputValues = async (output: any, txBuilder: any) => {
     })
   )
   outputParsed = outputAssets.reduce(buildooor.Value.add)
-  // console.log('outputParsed', outputParsed.toCbor().toString())
   return outputParsed
 }
 
 const createDatumOutsputs = async (scriptAddrress: any, datumOutputs: any, vestingAddressPKH: any) => {
-  // console.log('datumOutputs', datumOutputs)
   let datumOutputsParsed: any = []
   Promise.all(
     await datumOutputs.map((datum: any) => {
-      // console.log('datum', datum)
       datumOutputsParsed.push({
         address: scriptAddrress,
         value: buildooor.Value.lovelaces( 10_000_000 ),

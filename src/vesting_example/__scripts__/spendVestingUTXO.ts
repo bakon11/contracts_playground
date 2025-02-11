@@ -1,12 +1,10 @@
 import {  script } from "../contracts/vesting_contract";
-import VestingDatumRedeemer from "../redeemers/VestingDatumRedeemer";
 import { spendVestingUtxoTx } from "../txBuilders/spendVestingUtxoTx";
 import { seedPhraseToEntropy, genRootPrivateKey, genAddressPrv, genBaseAddressFromEntropy } from "../../lib/buildooorCrypto";
-import { Address, NetworkT, Credential, dataFromCbor, DataConstr, DataB, pByteString } from "@harmoniclabs/plu-ts";
+import { Address, NetworkT, Credential, dataFromCbor } from "@harmoniclabs/plu-ts";
 import { getAddressUtxoInfoOgmios, getProtocolParametersOgmios } from "../../backends/ogmios/ogmios";
 
-const backend = ["", "", "", ""];
-const seedPhrase = "";
+const seedPhrase: string = process.env.SEED_PHRASE as string;
 const network: NetworkT = "testnet";
 
 const compileContract = async () => {
@@ -22,7 +20,7 @@ const compileContract = async () => {
 
 const fetchAddressUtxos = async ( address: string) => {
   try {
-    if (backend && backend[0] === "ogmios") {
+    if (process.env.BACKEND === "ogmios") {
       console.log("Fetching UTXOs from Ogmios", address)
       const data: any = await getAddressUtxoInfoOgmios([address]);
       // console.log("Data address: ", data);
@@ -37,7 +35,7 @@ const fetchAddressUtxos = async ( address: string) => {
 
 const fetchProtocolParameters = async () => {
   try {
-    if (backend && backend[0] === "ogmios") {
+    if (process.env.BACKEND === "ogmios") {
       console.log("Fetching Protocol Parameters from Ogmios")
       const data: any = await getProtocolParametersOgmios();
       // console.log("Data protoclparams: ", data);
@@ -62,50 +60,6 @@ const genMetadata = async () => {
   return(metadataObj)
 }
 
-const runCreateVestingUTxO = async () => {
-  console.log("Generating Keys");
-  const entropy = seedPhraseToEntropy(seedPhrase);
-  const rootKey: any = genRootPrivateKey(entropy);
-  const addressRootKeySigner = genAddressPrv(rootKey, 0, 0, 0);
-  
-  const address1 = genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
-  // console.log("address1", address1.toString());
-  
-  const changeAddress = address1.toString();
-  console.log("changeAddress", changeAddress);
-
-  const address2 = genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
-  const vestingAddressPKH = address2.paymentCreds.hash;
-  console.log("vestingAddressPKH", vestingAddressPKH.toString());
-
-  // protocols from Ogmios
-  const protocolParameters = await fetchProtocolParameters();
-
-  console.log("Fetching UTXOs");
-  const inputUtxos = await fetchAddressUtxos(changeAddress);
-
-  const compiledContract = await compileContract();
-  const script = compiledContract.compiledContract;
-  const scriptAddress = compiledContract.scriptAddress;
-  const metadata = await genMetadata();
-
-  txBuilder_buildooor(
-    protocolParameters,
-    inputUtxos,
-    [],
-    changeAddress,
-    addressRootKeySigner,
-    metadata,
-    script,
-    scriptAddress,
-    [],
-    [],
-    [],
-    [ VestingDatumRedeemer, VestingDatumRedeemer ], 
-    vestingAddressPKH
-  );
-};
-
 const checkScriptForDatum = async (scriptUtxos: any, pkh: any) => {
   // console.log("scriptUtxos: ", scriptUtxos)
   let datumsFound: any = []
@@ -128,11 +82,11 @@ const checkScriptForDatum = async (scriptUtxos: any, pkh: any) => {
 // c3a2fe76c00fad53dd2165b9ab6b56c54a716e9fd853dfd35cc34c43
 const runSpendVestingUTxO = async () => {
   console.log("Generating Keys");
-  const entropy = seedPhraseToEntropy(seedPhrase);
-  const rootKey: any = genRootPrivateKey(entropy);
-  const addressRootKeySigner = genAddressPrv(rootKey, 1, 0, 0);
+  const entropy = await seedPhraseToEntropy(seedPhrase);
+  const rootKey: any = await genRootPrivateKey(entropy);
+  const addressRootKeySigner = await genAddressPrv(rootKey, 0, 0, 0);
   
-  const address = genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
+  const address = await genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
   // console.log("address1", address1.toString());
   
   const changeAddress = address;
