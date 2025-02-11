@@ -1,5 +1,5 @@
 import { script } from "../contracts/vesting_contract";
-import VestingDatumRedeemer from "../redeemers/VestingDatumRedeemer/VestingDatumRedeemer";
+import VestingDatum from "../redeemers/VestingDatumRedeemer/VestingDatumRedeemer";
 import { createVestingUtxoTx } from "../txBuilders/createVestingUtxoTx";
 import { seedPhraseToEntropy, genRootPrivateKey, genAddressPrv, genBaseAddressFromEntropy, genAccountPrivatekey, genAddressPrivateKey } from "../../lib/buildooorCrypto";
 import { Address, NetworkT, Credential } from "@harmoniclabs/plu-ts";
@@ -69,11 +69,10 @@ const runCreateVestingUTxO = async () => {
   
   const address1 = await genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
   // console.log("address1", address1.toString());
-  
   const changeAddress: string = address1.toString();
   console.log("changeAddress", changeAddress);
 
-  const addressForRedeemer = await genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
+  const addressForRedeemer = await genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
   const vestingAddressPKH = addressForRedeemer.paymentCreds.hash;
   console.log("vestingAddressPKH", vestingAddressPKH.toString());
 
@@ -96,7 +95,7 @@ const runCreateVestingUTxO = async () => {
     addressRootKeySigner,
     metadata,
     scriptAddress,
-    [ VestingDatumRedeemer ], 
+    [ VestingDatum ], 
     vestingAddressPKH
   );
 };

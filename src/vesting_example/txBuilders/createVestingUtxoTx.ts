@@ -19,7 +19,7 @@ export const createVestingUtxoTx: any = async (
   datumOutputs: any[],
   vestingAddressPKH: any
 ) => {
-  console.log("accountAddressKeyPrv", accountAddressKeyPrv)
+  console.log("accountAddressKeyPrv", accountAddressKeyPrv);
   /*
   ##########################################################################################################
   Constructing TxBuilder instance
@@ -93,26 +93,24 @@ export const createVestingUtxoTx: any = async (
 
   /*
   ##########################################################################################################
-  Find UTXO for collateral
+  Find UTXO for collateral and inputs
   #############################d############################################################################
   */
-  const utxo = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 40_000_000)
+  const utxoInputsSelected = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000)
   // console.log('colateral', utxo)
-
+  const colateral = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000)
+  console.log('colateral', colateral)
+  // console.log('allInputs', allInputs[0])
+  
   /*
   ##########################################################################################################
   Build Transaction
   #############################d############################################################################
   */
-
-  const allInputs = [ utxo ]
-  // console.log('allInputs', allInputs[0])
-
   try {
     let builtTx = txBuilder.buildSync({
-      inputs: allInputs,
-      requiredSigners: [ vestingAddressPKH ],
-      collaterals: [ utxo ],
+      inputs: [ utxoInputsSelected ],
+      collaterals: [ colateral ],
       // collateralReturn: {
       //    address: colateral.resolved.address,
       //    value: buildooor.Value.sub(colateral.resolved.value, buildooor.Value.lovelaces(2_000_000))
@@ -120,38 +118,16 @@ export const createVestingUtxoTx: any = async (
       invalidAfter: invalidAfter,
       invalidBefore: invalidBefore,
       metadata: txMeta,
-      outputs: [ ...outputsBuildooor, ...datumOutputsParsed],
+      outputs: [ ...datumOutputsParsed],
       changeAddress
     })
-    // Sign tx hash
-    const signedTx = accountAddressKeyPrv.sign(builtTx.body.hash.toBuffer())
-    // console.log("txBuffer", builtTx.body.hash.toBuffer());
-
-    const VKeyWitness = new buildooor.VKeyWitness(
-      new buildooor.VKey(signedTx.pubKey),
-      new buildooor.Signature(signedTx.signature)
-    )
-    // console.log("VKeyWitness", VKeyWitness);
-    builtTx.witnesses.addVKeyWitness(VKeyWitness)
-
+    builtTx.signWith(accountAddressKeyPrv)
     const txCBOR = builtTx.toCbor()
     const txHash = builtTx.hash
     const txFee = builtTx.body.fee
     const linearFee = txBuilder.calcLinearFee( txCBOR )
     const txJson = JSON.stringify(builtTx.toJson(), undefined, 2);
-    // console.log("\n" + "#".repeat(100))
-    // console.log("#".repeat(100))
-    // console.log("buildTx", builtTx)
-    // console.log("\n" + "#".repeat(100))
-    // console.log("#".repeat(100))
     console.log('txCBOR in app', txCBOR.toString())
-    // console.log('txHash', txHash.toString())
-    // console.log('minFee app', txFee)
-    // console.log('linearFee app', linearFee)
-    // console.log("Tx Raw: ", builtTx.body)
-    // console.log("\n" + "#".repeat(100))
-    // console.log("#".repeat(100))
-    // console.log('txJson builder', txJson)
     return builtTx
   } catch (error) {
     console.log('txBuilder.buildSync', error)
@@ -159,6 +135,17 @@ export const createVestingUtxoTx: any = async (
   }
 }
 
+/*
+// Sign tx hash old way
+const signedTx = await accountAddressKeyPrv.sign(builtTx.body.hash.toBuffer())
+// console.log("txBuffer", builtTx.body.hash.toBuffer());
+const VKeyWitness = new buildooor.VKeyWitness(
+  new buildooor.VKey(signedTx.pubKey),
+  new buildooor.Signature(signedTx.signature)
+)
+// console.log("VKeyWitness", VKeyWitness);
+builtTx.witnesses.addVKeyWitness(VKeyWitness)
+*/
 /*
 ##########################################################################################################
 Helper Functions
@@ -283,10 +270,10 @@ const createDatumOutsputs = async (scriptAddrress: any, datumOutputs: any, vesti
         address: scriptAddrress,
         value: buildooor.Value.lovelaces( 10_000_000 ),
         datum: datum.VestingDatum({
-            beneficiary: pluts.pBSToData.$( pluts.pByteString( vestingAddressPKH.toBuffer() ) ),
+            beneficiary: pluts.pBSToData.$( pluts.pByteString( vestingAddressPKH ) ),
             deadline: pluts.pIntToData.$( nowPosix + 10_000 )
         })
-    })
+      })
     })
   )
   return datumOutputsParsed

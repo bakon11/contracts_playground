@@ -18,9 +18,6 @@ export const spendVestingUtxoTx: any = async (
   script: any,
   scriptAddr: any,
   scriptInputs: any,
-  mints: any,
-  mintedValue: any,
-  datumOutputs: any[],
   vestingAddressPKH: any
 ) => {
   console.log("accountAddressKeyPrv", accountAddressKeyPrv)
@@ -47,20 +44,6 @@ export const spendVestingUtxoTx: any = async (
   Creating outputs for receiving address
   #############################d############################################################################
   */
-  // If there is any mints
-  let mintOutputs: any = []
-  if (mints.length > 0) {
-    // console.log('mints', mints)
-    // console.log('mintedValue', mintedValue)
-    mintOutputs = await mintedTokensOutputs(mintedValue, changeAddress, scriptAddr)
-    // console.log('mintOutputs', mintOutputs)
-  }
-
-  /*
-  ##########################################################################################################
-  Creating outputs for receiving address
-  #############################d############################################################################
-  */
   // Simple outputs
   let outputsBuildooor: any = []
   // console.log('utxoOutputs', utxoOutputs)
@@ -71,15 +54,9 @@ export const spendVestingUtxoTx: any = async (
 
   /*
   ##########################################################################################################
-  If there is a datum create an output for it.
+  If there are refInputs create an input for it.
   ##########################################################################################################
   */
- let datumOutputsParsed: any = [];
-  if (datumOutputs.length > 0) {
-    datumOutputsParsed = await createDatumOutsputs(scriptAddr, datumOutputs, vestingAddressPKH)
-    console.log('datumOutputsParsed', datumOutputsParsed)
-  }
-
 let refScriptInputs: any = []
   if (scriptInputs.length > 0) {
     refScriptInputs = await createRefScriptInputs(scriptInputs, script)
@@ -111,32 +88,31 @@ let refScriptInputs: any = []
   Transaction time to live till after slot?
   #############################d############################################################################
   */
-  const tip: any = await setTtl(mints)
+  const tip: any = await setTtl()
   const invalidAfter = tip ? tip + 129600 : null
   const invalidBefore = tip ? tip : null
 
   /*
   ##########################################################################################################
-  Find UTXO for collateral
+  Find UTXO for collateral and inputs
   #############################d############################################################################
   */
-  const utxo = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 40_000_000)
+  const utxoInputsSelected = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000)
   // console.log('colateral', utxo)
+  const colateral = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000)
+  // console.log('colateral', colateral)
+  // console.log('allInputs', allInputs[0])
 
   /*
   ##########################################################################################################
   Build Transaction
   #############################d############################################################################
   */
-
-  const allInputs = [ utxo, ...refScriptInputs ]
-  // console.log('allInputs', allInputs[0])
-
   try {
     let builtTx = txBuilder.buildSync({
-      inputs: allInputs,
-      requiredSigners: refScriptInputs.length > 0 ? [ vestingAddressPKH ] : [],
-      collaterals: [ utxo ],
+      inputs: [ utxoInputsSelected, ...refScriptInputs ],
+      requiredSigners: [ vestingAddressPKH ],
+      collaterals: [ colateral ],
       // collateralReturn: {
       //    address: colateral.resolved.address,
       //    value: buildooor.Value.sub(colateral.resolved.value, buildooor.Value.lovelaces(2_000_000))
@@ -144,39 +120,17 @@ let refScriptInputs: any = []
       invalidAfter: invalidAfter,
       invalidBefore: invalidBefore,
       metadata: txMeta,
-      mints: mints.length > 0 ? mints : null,
-      outputs: [...mintOutputs, ...outputsBuildooor, ...datumOutputsParsed],
+      outputs:  outputsBuildooor,
       changeAddress
     })
-    // Sign tx hash
-    const signedTx = accountAddressKeyPrv.sign(builtTx.body.hash.toBuffer())
-    // console.log("txBuffer", builtTx.body.hash.toBuffer());
-
-    const VKeyWitness = new buildooor.VKeyWitness(
-      new buildooor.VKey(signedTx.pubKey),
-      new buildooor.Signature(signedTx.signature)
-    )
-    // console.log("VKeyWitness", VKeyWitness);
-    builtTx.witnesses.addVKeyWitness(VKeyWitness)
-
+    builtTx.signWith(accountAddressKeyPrv)
     const txCBOR = builtTx.toCbor()
     const txHash = builtTx.hash
     const txFee = builtTx.body.fee
     const linearFee = txBuilder.calcLinearFee( txCBOR )
     const txJson = JSON.stringify(builtTx.toJson(), undefined, 2);
-    // console.log("\n" + "#".repeat(100))
-    // console.log("#".repeat(100))
-    // console.log("buildTx", builtTx)
-    // console.log("\n" + "#".repeat(100))
-    // console.log("#".repeat(100))
     console.log('txCBOR in app', txCBOR.toString())
-    // console.log('txHash', txHash.toString())
-    // console.log('minFee app', txFee)
-    // console.log('linearFee app', linearFee)
-    // console.log("Tx Raw: ", builtTx.body)
-    // console.log("\n" + "#".repeat(100))
-    // console.log("#".repeat(100))
-    // console.log('txJson builder', txJson)
+
     return builtTx
   } catch (error) {
     console.log('txBuilder.buildSync', error)
@@ -191,10 +145,10 @@ Helper Functions
 */
 const nowPosix = Date.now();
 
-const setTtl = async (mints: any) => {
+const setTtl = async () => {
   const tip: any = await getTipOgmios();
   console.log('tip', tip?.slot)
-  return mints.length === 0 ? tip?.slot : null
+  return tip?.slot
 }
 //this function adds outputs for minted tokens
 const mintedTokensOutputs = async (mintedValue: any, changeAddress: string, scriptAddr: any) => {

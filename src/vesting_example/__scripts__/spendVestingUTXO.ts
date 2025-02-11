@@ -84,9 +84,9 @@ const runSpendVestingUTxO = async () => {
   console.log("Generating Keys");
   const entropy = await seedPhraseToEntropy(seedPhrase);
   const rootKey: any = await genRootPrivateKey(entropy);
-  const addressRootKeySigner = await genAddressPrv(rootKey, 0, 0, 0);
+  const addressRootKeySigner = await genAddressPrv(rootKey, 1, 0, 0);
   
-  const address = await genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
+  const address = await genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
   // console.log("address1", address1.toString());
   
   const changeAddress = address;
@@ -127,9 +127,6 @@ const runSpendVestingUTxO = async () => {
     script,
     scriptAddress,
     scriptInputs,
-    [],
-    [],
-    [], 
     vestingAddressPKH
   );
 };

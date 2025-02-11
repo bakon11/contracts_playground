@@ -1,11 +1,11 @@
 import { PPubKeyHash, int, pstruct } from "@harmoniclabs/plu-ts";
 
 // modify the Datum as you prefer
-const VestingDatumRedeemer = pstruct({
+const VestingDatum = pstruct({
     VestingDatum: {
         beneficiary: PPubKeyHash.type,
         deadline: int // posix time
     }
 });
 
-export default VestingDatumRedeemer;
+export default VestingDatum;

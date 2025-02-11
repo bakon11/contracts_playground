@@ -1,5 +1,5 @@
 import { Address, compile, Credential, pfn, Script, ScriptType, Builtin, Delay, UPLCConst, compileUPLC, UPLCProgram, ByteString, parseUPLC, PScriptContext, unit, plet, pmatch, perror, PMaybe, punsafeConvertType, pBool, passert, ptraceIfFalse, pStr, pdelay, data, Force, Application} from "@harmoniclabs/plu-ts";
-import VestingDatumRedeemer from "../redeemers/VestingDatumRedeemer/VestingDatumRedeemer";
+import VestingDatum from "../redeemers/VestingDatumRedeemer/VestingDatumRedeemer";
 
 export const contract = pfn([
     PScriptContext.type
@@ -12,7 +12,7 @@ export const contract = pfn([
         ._(_ => perror(PMaybe(data).type))
     );
 
-    const datum = plet( punsafeConvertType( maybeDatum.unwrap, VestingDatumRedeemer.type ) )
+    const datum = plet( punsafeConvertType( maybeDatum.unwrap, VestingDatum.type ) )
     
     const signedByBeneficiary = tx.signatories.some( datum.beneficiary.eq )
 
