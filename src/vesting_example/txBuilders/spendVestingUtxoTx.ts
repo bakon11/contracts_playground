@@ -1,142 +1,130 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as buildooor from '@harmoniclabs/buildooor'
-import * as pluts from '@harmoniclabs/plu-ts'
-import { splitAsset } from '../../lib/utils'
-import { OgmiosUtxoToInputsBuildooor, getTipOgmios } from '../../backends/ogmios/ogmios'
-import { fromHex } from '@harmoniclabs/uint8array-utils'
+import * as buildooor from "@harmoniclabs/buildooor";
+import * as pluts from "@harmoniclabs/plu-ts";
+import { splitAsset } from "../../lib/utils";
+import { OgmiosUtxoToInputsBuildooor, getTipOgmios } from "../../backends/ogmios/ogmios";
+import { fromHex } from "@harmoniclabs/uint8array-utils";
 import { defaultMainnetGenesisInfos, defaultPreprodGenesisInfos, defaultProtocolParameters, IGetGenesisInfos, IGetProtocolParameters, TxBuilder } from "@harmoniclabs/plu-ts";
 
-
 //** This TX builder will only fit very specific use cases for now. */
-export const spendVestingUtxoTx: any = async (
-  protocolParameters: any,
-  utxoInputs: any,
-  utxoOutputs: any,
-  changeAddress: any,
-  accountAddressKeyPrv: any,
-  metadata: any,
-  script: any,
-  scriptAddr: any,
-  scriptInputs: any,
-  vestingAddressPKH: any
-) => {
-  console.log("accountAddressKeyPrv", accountAddressKeyPrv)
-  /*
+export const spendVestingUtxoTx: any = async (protocolParameters: any, utxoInputs: any, utxoOutputs: any, changeAddress: any, accountAddressKeyPrv: any, metadata: any, script: any, scriptAddr: any, scriptInputs: any, vestingAddressPKH: any) => {
+    console.log("accountAddressKeyPrv", accountAddressKeyPrv);
+    /*
   ##########################################################################################################
   Constructing TxBuilder instance
   #############################d############################################################################
   */
-  const txBuilder = new buildooor.TxBuilder(defaultProtocolParameters, defaultPreprodGenesisInfos) 
-  // console.log('defaultProtocolParameters', protocolParameters)
-  // console.log('defaultPreprodGenesisInfos', defaultPreprodGenesisInfos)
-  /*
+    const txBuilder = new buildooor.TxBuilder(defaultProtocolParameters, defaultPreprodGenesisInfos);
+    // console.log('defaultProtocolParameters', protocolParameters)
+    // console.log('defaultPreprodGenesisInfos', defaultPreprodGenesisInfos)
+    /*
   ##########################################################################################################
   Generate inputs
   #############################d############################################################################
   */
-  const inputsBuildooorUtxo: any = await OgmiosUtxoToInputsBuildooor(utxoInputs)
-  // console.log('inputsBuildooorUtxo', inputsBuildooorUtxo)
-  // const inputsParsed = inputsBuildooorUtxo.map((utxo: any) => ({ utxo: utxo }))
-  // console.log('inputsParsed', inputsParsed)
+    const inputsBuildooorUtxo: any = await OgmiosUtxoToInputsBuildooor(utxoInputs);
+    // console.log('inputsBuildooorUtxo', inputsBuildooorUtxo)
+    // const inputsParsed = inputsBuildooorUtxo.map((utxo: any) => ({ utxo: utxo }))
+    // console.log('inputsParsed', inputsParsed)
 
-  /*
+    /*
   ##########################################################################################################
   Creating outputs for receiving address
   #############################d############################################################################
   */
-  // Simple outputs
-  let outputsBuildooor: any = []
-  // console.log('utxoOutputs', utxoOutputs)
-  if (utxoOutputs.length > 0) {
-    outputsBuildooor = await createOutputs(utxoOutputs, txBuilder)
-    // console.log("outputsParsed", outputsbuildooor);
-  }
+    // Simple outputs
+    let outputsBuildooor: any = [];
+    // console.log('utxoOutputs', utxoOutputs)
+    if (utxoOutputs.length > 0) {
+        outputsBuildooor = await createOutputs(utxoOutputs, txBuilder);
+        // console.log("outputsParsed", outputsbuildooor);
+    }
 
-  /*
+    /*
   ##########################################################################################################
   If there are refInputs create an input for it.
   ##########################################################################################################
   */
-let refScriptInputs: any = []
-  if (scriptInputs.length > 0) {
-    refScriptInputs = await createRefScriptInputs(scriptInputs, script)
-    console.log('refScriptInputs', refScriptInputs[0].utxo.resolved.datum)
-    // console.log('refScriptInputs Json', refScriptInputs);
-  }
+    let refScriptInputs: any = [];
+    if (scriptInputs.length > 0) {
+        refScriptInputs = await createRefScriptInputs(scriptInputs, script);
+        console.log("refScriptInputs", refScriptInputs[0].utxo.resolved.datum);
+        // console.log('refScriptInputs Json', refScriptInputs);
+    }
 
-  /*
+    /*
   ##########################################################################################################
   Attach Metadata to transaction when passed.
   ##########################################################################################################
   */
-  const txMeta: any = new buildooor.TxMetadata({
-    [metadata.label]: buildooor.jsonToMetadata(metadata.properties)
-  })
-  // console.log("txMeta", txMeta);
+    const txMeta: any = new buildooor.TxMetadata({
+        [metadata.label]: buildooor.jsonToMetadata(metadata.properties),
+    });
+    // console.log("txMeta", txMeta);
 
-  /*
+    /*
   ##########################################################################################################
   Future pool delegation certificate
   ##########################################################################################################
   */
-  // const stakeCred = accountAddressKeyPrv
-  // console.log("stakeCred", stakeCred);
-  // const delegateCerts = new buildooor.Certificate(buildooor.CertificateType.StakeDelegation, accountAddressKeyPrv.stake_cred(), 0);
+    // const stakeCred = accountAddressKeyPrv
+    // console.log("stakeCred", stakeCred);
+    // const delegateCerts = new buildooor.Certificate(buildooor.CertificateType.StakeDelegation, accountAddressKeyPrv.stake_cred(), 0);
 
-  /*
+    /*
   ##########################################################################################################
   Transaction time to live till after slot?
   #############################d############################################################################
   */
-  const tip: any = await setTtl()
-  const invalidAfter = tip ? tip + 129600 : null
-  const invalidBefore = tip ? tip : null
+    const tip: any = await setTtl();
+    const invalidAfter = tip ? tip + 129600 : null;
+    const invalidBefore = tip ? tip : null;
 
-  /*
+    /*
   ##########################################################################################################
   Find UTXO for collateral and inputs
   #############################d############################################################################
   */
-  const utxoInputsSelected = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000)
-  // console.log('colateral', utxo)
-  const colateral = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000)
-  // console.log('colateral', colateral)
-  // console.log('allInputs', allInputs[0])
+    const utxoInputsSelected = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000);
+    // console.log('colateral', utxo)
+    const colateral = inputsBuildooorUtxo.find((u: any) => u.resolved.value.lovelaces > 5_000_000);
+    // console.log('colateral', colateral)
+    // console.log('allInputs', allInputs[0])
 
-  /*
+    /*
   ##########################################################################################################
   Build Transaction
   #############################d############################################################################
   */
-  try {
-    let builtTx = txBuilder.buildSync({
-      inputs: [ utxoInputsSelected, ...refScriptInputs ],
-      requiredSigners: [ vestingAddressPKH ],
-      collaterals: [ colateral ],
-      // collateralReturn: {
-      //    address: colateral.resolved.address,
-      //    value: buildooor.Value.sub(colateral.resolved.value, buildooor.Value.lovelaces(2_000_000))
-      //},
-      invalidAfter: invalidAfter,
-      invalidBefore: invalidBefore,
-      metadata: txMeta,
-      outputs:  outputsBuildooor,
-      changeAddress
-    })
-    builtTx.signWith(accountAddressKeyPrv)
-    const txCBOR = builtTx.toCbor()
-    const txHash = builtTx.hash
-    const txFee = builtTx.body.fee
-    const linearFee = txBuilder.calcLinearFee( txCBOR )
-    const txJson = JSON.stringify(builtTx.toJson(), undefined, 2);
-    console.log('txCBOR in app', txCBOR.toString())
+    try {
+        let builtTx = txBuilder.buildSync({
+            inputs: [utxoInputsSelected, ...refScriptInputs],
+            changeAddress: changeAddress,
+            outputs: [...outputsBuildooor],
+            requiredSigners: [vestingAddressPKH],
+            collaterals: [colateral],
+            // collateralReturn: {
+            //    address: colateral.resolved.address,
+            //    value: buildooor.Value.sub(colateral.resolved.value, buildooor.Value.lovelaces(2_000_000))
+            //},
+            invalidAfter: invalidAfter,
+            invalidBefore: invalidBefore,
+            metadata: txMeta,
+        });
+        builtTx.signWith(accountAddressKeyPrv);
+        const txCBOR = builtTx.toCbor();
+        const txHash = builtTx.hash;
+        const txFee = builtTx.body.fee;
+        const linearFee = txBuilder.calcLinearFee(txCBOR);
+        const txJson = JSON.stringify(builtTx.toJson(), undefined, 2);
+        console.log("txCBOR in app", txCBOR.toString());
 
-    return builtTx
-  } catch (error) {
-    console.log('txBuilder.buildSync', error)
-    return 'tx error: ' + error
-  }
-}
+        return builtTx;
+    } catch (error) {
+        console.log("txBuilder.buildSync", error);
+        return "tx error: " + error;
+    }
+};
 
 /*
 ##########################################################################################################
@@ -146,40 +134,33 @@ Helper Functions
 const nowPosix = Date.now();
 
 const setTtl = async () => {
-  const tip: any = await getTipOgmios();
-  console.log('tip', tip?.slot)
-  return tip?.slot
-}
+    const tip: any = await getTipOgmios();
+    console.log("tip", tip?.slot);
+    return tip?.slot;
+};
 //this function adds outputs for minted tokens
 const mintedTokensOutputs = async (mintedValue: any, changeAddress: string, scriptAddr: any) => {
-  let mintOutputs: any[] = []
-  // console.log('mintedValue', mintedValue.toJson())
-  Promise.all(
-    Object.entries(mintedValue.toJson()).map(([policyId, assets]: any) => {
-      // policyId !== '' && console.log('policyId', fromHex(policyId))
-      // policyId !== '' && console.log('assets', assets)
-      policyId !== '' &&
-        Object.entries(assets).map(([assetName, quantity]: any) => {
-          // policyId !== '' && console.log('policyId', scriptAddr.paymentCreds.hash)
-          // assetName !== '' && console.log('assetName', assetName)
-          // assetName !== '' && console.log('quantity', quantity)
-          assetName !== '' &&
-            mintOutputs.push({
-              address: changeAddress,
-              value: buildooor.Value.add(
-                buildooor.Value.lovelaces(5_000_000),
-                buildooor.Value.singleAsset(
-                  scriptAddr.paymentCreds.hash,
-                  fromHex(assetName),
-                  quantity
-                )
-              )
-            })
+    let mintOutputs: any[] = [];
+    // console.log('mintedValue', mintedValue.toJson())
+    Promise.all(
+        Object.entries(mintedValue.toJson()).map(([policyId, assets]: any) => {
+            // policyId !== '' && console.log('policyId', fromHex(policyId))
+            // policyId !== '' && console.log('assets', assets)
+            policyId !== "" &&
+                Object.entries(assets).map(([assetName, quantity]: any) => {
+                    // policyId !== '' && console.log('policyId', scriptAddr.paymentCreds.hash)
+                    // assetName !== '' && console.log('assetName', assetName)
+                    // assetName !== '' && console.log('quantity', quantity)
+                    assetName !== "" &&
+                        mintOutputs.push({
+                            address: changeAddress,
+                            value: buildooor.Value.add(buildooor.Value.lovelaces(5_000_000), buildooor.Value.singleAsset(scriptAddr.paymentCreds.hash, fromHex(assetName), quantity)),
+                        });
+                });
         })
-    })
-  )
-  return mintOutputs
-}
+    );
+    return mintOutputs;
+};
 
 /*
 #############################################################################################################################
@@ -201,108 +182,100 @@ THe below is an example how to pass an aray of UTXO outputs to the function
 #############################d############################################################################
 */
 const createOutputs = async (utxoOutputs: any, txBuilder: any) => {
-  let outputsbuildooor: buildooor.TxOut[] = []
-  Promise.all(
-    await utxoOutputs.map(async (output: any) => {
-      outputsbuildooor.push(
-        new buildooor.TxOut({
-          address: buildooor.Address.fromString(output.address),
-          value: await createOutputValues(output, txBuilder) // parse kupo value
-          // datum: [], // parse kupo datum
-          // refScript: [] // look for ref script if any
+    let outputsbuildooor: buildooor.TxOut[] = [];
+    Promise.all(
+        await utxoOutputs.map(async (output: any) => {
+            outputsbuildooor.push(
+                new buildooor.TxOut({
+                    address: buildooor.Address.fromString(output.address),
+                    value: await createOutputValues(output, txBuilder), // parse kupo value
+                    // datum: [], // parse kupo datum
+                    // refScript: [] // look for ref script if any
+                })
+            );
         })
-      )
-    })
-  )
-  return outputsbuildooor
-}
+    );
+    return outputsbuildooor;
+};
 
 const createOutputValues = async (output: any, txBuilder: any) => {
-  // console.log("output", output);
-  let outputAssets: any = []
-  Promise.all(
-    Object.entries(output.value).map(([key, value]: any) => {
-      // console.log("key", key);
-      // console.log("value", value);
-      key === 'coins' && outputAssets.push(buildooor.Value.lovelaces(value))
-      key === 'assets' &&
-        Object.entries(value).length > 0 &&
-        Object.entries(value).map(([asset, quantity]: any) => {
-          let assetNew = buildooor.Value.singleAsset(
-            new buildooor.Hash28(splitAsset(asset)[0]),
-            fromHex(splitAsset(asset)[1]),
-            quantity
-          )
-          outputAssets.push(assetNew)
+    // console.log("output", output);
+    let outputAssets: any = [];
+    Promise.all(
+        Object.entries(output.value).map(([key, value]: any) => {
+            // console.log("key", key);
+            // console.log("value", value);
+            key === "coins" && outputAssets.push(buildooor.Value.lovelaces(value));
+            key === "assets" &&
+                Object.entries(value).length > 0 &&
+                Object.entries(value).map(([asset, quantity]: any) => {
+                    let assetNew = buildooor.Value.singleAsset(new buildooor.Hash28(splitAsset(asset)[0]), fromHex(splitAsset(asset)[1]), quantity);
+                    outputAssets.push(assetNew);
+                });
         })
-    })
-  )
-  let outputParsed = outputAssets.reduce(buildooor.Value.add)
-  // console.log('outputParsed', outputParsed.toCbor().toString())
-  const minUtxo = txBuilder.getMinimumOutputLovelaces(outputParsed.toCbor().toString())
-  console.log('minUtxo', Number(minUtxo))
+    );
+    let outputParsed = outputAssets.reduce(buildooor.Value.add);
+    // console.log('outputParsed', outputParsed.toCbor().toString())
+    const minUtxo = txBuilder.getMinimumOutputLovelaces(outputParsed.toCbor().toString());
+    console.log("minUtxo", Number(minUtxo));
 
-  outputAssets = []
-  Promise.all(
-    Object.entries(output.value).map(([key, value]: any) => {
-      // console.log("key", key);
-      // console.log("value", value);
-      key === 'coins' && outputAssets.push(buildooor.Value.lovelaces(value + Number(minUtxo)))
-      key === 'assets' &&
-        Object.entries(value).length > 0 &&
-        Object.entries(value).map(([asset, quantity]: any) => {
-          let assetNew = buildooor.Value.singleAsset(
-            new buildooor.Hash28(splitAsset(asset)[0]),
-            fromHex(splitAsset(asset)[1]),
-            quantity
-          )
-          outputAssets.push(assetNew)
+    outputAssets = [];
+    Promise.all(
+        Object.entries(output.value).map(([key, value]: any) => {
+            // console.log("key", key);
+            // console.log("value", value);
+            key === "coins" && outputAssets.push(buildooor.Value.lovelaces(value + Number(minUtxo)));
+            key === "assets" &&
+                Object.entries(value).length > 0 &&
+                Object.entries(value).map(([asset, quantity]: any) => {
+                    let assetNew = buildooor.Value.singleAsset(new buildooor.Hash28(splitAsset(asset)[0]), fromHex(splitAsset(asset)[1]), quantity);
+                    outputAssets.push(assetNew);
+                });
         })
-    })
-  )
-  outputParsed = outputAssets.reduce(buildooor.Value.add)
-  // console.log('outputParsed', outputParsed.toCbor().toString())
-  return outputParsed
-}
+    );
+    outputParsed = outputAssets.reduce(buildooor.Value.add);
+    // console.log('outputParsed', outputParsed.toCbor().toString())
+    return outputParsed;
+};
 
 const createDatumOutsputs = async (scriptAddrress: any, datumOutputs: any, vestingAddressPKH: any) => {
-  // console.log('datumOutputs', datumOutputs)
-  let datumOutputsParsed: any = []
-  Promise.all(
-    await datumOutputs.map((datum: any) => {
-      // console.log('datum', datum)
-      datumOutputsParsed.push({
-        address: scriptAddrress,
-        value: buildooor.Value.lovelaces( 10_000_000 ),
-        datum: datum.VestingDatum({
-            beneficiary: pluts.pBSToData.$( pluts.pByteString( vestingAddressPKH.toBuffer() ) ),
-            deadline: pluts.pIntToData.$( nowPosix + 10_000 )
+    // console.log('datumOutputs', datumOutputs)
+    let datumOutputsParsed: any = [];
+    Promise.all(
+        await datumOutputs.map((datum: any) => {
+            // console.log('datum', datum)
+            datumOutputsParsed.push({
+                address: scriptAddrress,
+                value: buildooor.Value.lovelaces(10_000_000),
+                datum: datum.VestingDatum({
+                    beneficiary: pluts.pBSToData.$(pluts.pByteString(vestingAddressPKH.toBuffer())),
+                    deadline: pluts.pIntToData.$(nowPosix + 10_000),
+                }),
+            });
         })
-    })
-    })
-  )
-  return datumOutputsParsed
-}
+    );
+    return datumOutputsParsed;
+};
 
 const createRefScriptInputs = async (scriptOutputs: any, script: any) => {
-  let refScriptInputs: any = []
-  try {
-    for (const output of scriptOutputs) {
-      // console.log('output', output);
-      let outputParsed = await OgmiosUtxoToInputsBuildooor([output]);
-      // console.log('outputParsed', outputParsed);
-      refScriptInputs.push({
-        utxo: outputParsed[0],
-        inputScript: {
-          script: script,
-          datum: "inline",
-          redeemer: new pluts.DataI(0)
+    let refScriptInputs: any = [];
+    try {
+        for (const output of scriptOutputs) {
+            // console.log('output', output);
+            let outputParsed = await OgmiosUtxoToInputsBuildooor([output]);
+            // console.log('outputParsed', outputParsed);
+            refScriptInputs.push({
+                utxo: outputParsed[0],
+                inputScript: {
+                    script: script,
+                    datum: "inline",
+                    redeemer: new pluts.DataI(0),
+                },
+            });
         }
-      });
+        return refScriptInputs;
+    } catch (error) {
+        console.error("Error in createRefScriptInputs:", error);
+        throw error; // or handle the error as appropriate for your application
     }
-    return refScriptInputs;
-  } catch (error) {
-    console.error('Error in createRefScriptInputs:', error);
-    throw error; // or handle the error as appropriate for your application
-  }
 };

@@ -65,17 +65,17 @@ const genMetadata = async () => {
 
 const runCreateVestingUTxO = async () => {
   console.log("Generating Keys");
-  const entropy = seedPhraseToEntropy(seedPhrase);
-  const rootKey: any = genRootPrivateKey(entropy);
-  const addressRootKeySigner = genAddressPrv(rootKey, 0, 0, 0);
+  const entropy = await seedPhraseToEntropy(seedPhrase);
+  const rootKey: any = await genRootPrivateKey(entropy);
+  const addressRootKeySigner = await genAddressPrv(rootKey, 0, 0, 0);
   
-  const address1 = genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
+  const address1 = await genBaseAddressFromEntropy(entropy, "testnet", 0, 0);
   // console.log("address1", address1.toString());
   
   const changeAddress = address1.toString();
   console.log("changeAddress", changeAddress);
 
-  const address2 = genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
+  const address2 = await genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
   const vestingAddressPKH = address2.paymentCreds.hash;
   console.log("vestingAddressPKH", vestingAddressPKH.toString());
 
@@ -129,11 +129,11 @@ const checkScriptForDatum = async (scriptUtxos: any, pkh: any) => {
 // c3a2fe76c00fad53dd2165b9ab6b56c54a716e9fd853dfd35cc34c43
 const runSpendVestingUTxO = async () => {
   console.log("Generating Keys");
-  const entropy = seedPhraseToEntropy(seedPhrase);
-  const rootKey: any = genRootPrivateKey(entropy);
+  const entropy = await seedPhraseToEntropy(seedPhrase);
+  const rootKey: any = await genRootPrivateKey(entropy);
   const addressRootKeySigner = genAddressPrv(rootKey, 1, 0, 0);
   
-  const address = genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
+  const address = await genBaseAddressFromEntropy(entropy, "testnet", 1, 0);
   // console.log("address1", address1.toString());
   
   const changeAddress = address;
